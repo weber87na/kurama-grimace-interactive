@@ -1,9 +1,9 @@
-# Kurama Grimace Interactive
+# 藏馬鬼臉互動短片
 
-A browser based interactive Kurama grimace experience.
+以《幽遊白書》藏馬為主題的互動網頁與直式短片專案。
 
-## Run locally
+## 本機執行
 
-Serve this directory with any static web server and open `index.html`.
+使用任一靜態網站伺服器啟動此資料夾，再以瀏覽器開啟 `index.html`。
 
-The source video clips are excluded from this repository. Add your own authorized `assets/intro_clip.mp4` and `assets/outro_clip.mp4` files locally to enable the intro and outro segments.
+片頭、片尾影片及完成的短片已一併納入 repo。完整動畫集數不納入版本控制。
