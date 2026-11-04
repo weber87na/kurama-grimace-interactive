@@ -19,3 +19,15 @@ An interactive browser experience and vertical short video project featuring Kur
 Serve this directory with any static web server, then open `index.html` in a browser.
 
 The intro clip, outro clip, and finished short video are included in this repository. The full anime episode is excluded from version control.
+
+## 日本語
+
+### 蔵馬の変顔インタラクティブ
+
+『幽☆遊☆白書』の蔵馬をテーマにした、ブラウザー上で楽しめるインタラクティブ作品と縦型ショート動画のプロジェクトです。
+
+#### ローカルで実行する
+
+任意の静的ウェブサーバーでこのディレクトリを配信し、ブラウザーで `index.html` を開いてください。
+
+オープニング動画、エンディング動画、完成したショート動画をこのリポジトリに収録しています。アニメ本編はバージョン管理の対象外です。
