@@ -1,0 +1,220 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0d0b10">
+  <title>&#8203;</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #0d0b10;
+      touch-action: none;
+    }
+    .viewport {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    /* Blurred ambient backdrop filling 100% of mobile 9:16 or desktop 16:9 screen */
+    .blur-bg {
+      position: absolute;
+      inset: -40px;
+      background-position: center;
+      background-size: cover;
+      filter: blur(28px) brightness(0.62) saturate(1.15);
+      transform: scale(1.08);
+      pointer-events: none;
+      z-index: 0;
+    }
+    /* Centered 4:3 main stage maximizing space on both mobile portrait and desktop landscape */
+    .stage {
+      position: relative;
+      z-index: 1;
+      width: min(100vw, calc(100dvh * 4 / 3));
+      height: min(100dvh, calc(100vw * 3 / 4));
+      aspect-ratio: 4 / 3;
+      overflow: hidden;
+      background: #141018;
+      box-shadow: 0 0 60px rgba(0, 0, 0, 0.75);
+    }
+    .stage-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+    .stage[data-phase="intro"] #introVideo {
+      opacity: 1;
+      z-index: 2;
+    }
+    .stage[data-phase="outro"] #outroVideo {
+      opacity: 1;
+      z-index: 2;
+    }
+    /* Interactive Kurama grimace playground layer */
+    .interactive-layer {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+      z-index: 1;
+    }
+    .stage[data-phase="play"] .interactive-layer {
+      opacity: 1;
+      pointer-events: auto;
+      z-index: 3;
+    }
+    .jungle-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      pointer-events: none;
+    }
+    /* Canvas positioned so vUv.y = 0 (Kurama's upside-down shoulders) is flush with top: 0% of stage */
+    .kurama-canvas {
+      position: absolute;
+      width: 95%;
+      height: 116%;
+      left: 2.5%;
+      top: -14.1%;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .hit-area {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 4;
+      cursor: grab;
+      touch-action: none;
+    }
+    .hit-area:active {
+      cursor: grabbing;
+    }
+    /* 5 pure visual progress dots (zero text) */
+    .dots-bar {
+      position: absolute;
+      bottom: 3.5%;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 12px;
+      z-index: 5;
+      pointer-events: none;
+      padding: 8px 16px;
+      border-radius: 99px;
+      background: rgba(15, 12, 20, 0.45);
+      backdrop-filter: blur(6px);
+    }
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.22);
+      border: 1.5px solid rgba(255, 255, 255, 0.4);
+      transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .dot.is-lit {
+      background: #ef7a9f;
+      border-color: #ffd0df;
+      transform: scale(1.28);
+      box-shadow: 0 0 12px rgba(239, 122, 159, 0.85);
+    }
+    /* Pure icon overlay buttons (zero text) for initial autoplay unlock or replay */
+    .icon-btn {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.75);
+      background: rgba(20, 16, 28, 0.72);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
+      transition: transform 0.18s ease, background-color 0.18s ease;
+    }
+    .icon-btn:hover {
+      background: rgba(239, 122, 159, 0.85);
+      transform: translate(-50%, -50%) scale(1.08);
+    }
+    .icon-btn:active {
+      transform: translate(-50%, -50%) scale(0.95);
+    }
+    .icon-btn[hidden] {
+      display: none !important;
+    }
+    .icon-btn svg {
+      width: 38px;
+      height: 38px;
+      fill: #ffffff;
+    }
+  </style>
+</head>
+<body>
+  <div class="viewport">
+    <div class="blur-bg" id="blurBg"></div>
+    <div class="stage" id="stage" data-phase="intro">
+      <video id="introVideo" class="stage-video" src="assets/intro_clip.mp4?v=2" playsinline webkit-playsinline preload="auto"></video>
+      <video id="outroVideo" class="stage-video" src="assets/outro_clip.mp4?v=2" playsinline webkit-playsinline preload="auto"></video>
+
+      <div class="interactive-layer" id="interactiveLayer">
+        <img id="jungleBg" class="jungle-bg" alt="" draggable="false">
+        <canvas id="kuramaCanvas" class="kurama-canvas"></canvas>
+        <div id="hitArea" class="hit-area"></div>
+        <div class="dots-bar">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+      </div>
+
+      <button type="button" id="startBtn" class="icon-btn" hidden>
+        <svg viewBox="0 0 24 24"><path d="M8 5.14v14l11-7-11-7z"/></svg>
+      </button>
+
+      <button type="button" id="replayBtn" class="icon-btn" hidden>
+        <svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <script src="assets/kurama-ugly/ugly_assets.js"></script>
+  <script src="assets/kurama-ugly/interactive.js"></script>
+</body>
+</html>
